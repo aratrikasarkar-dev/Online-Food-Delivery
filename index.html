@@ -1,0 +1,299 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUNCHY - Food Delivery</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<header class="navbar">
+    <a href="#home" class="logo">MUNCHY<span>.</span></a>
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#restaurants">Restaurants</a>
+        <a href="#menu">Menu</a>
+        <a href="#orders">My Orders</a>
+        <a href="#authSection" id="navLogin">Login / Register</a>
+    </nav>
+    <button class="cart-nav" onclick="scrollToCart()">🛒 Cart <span id="cartCount">0</span></button>
+</header>
+
+<!-- AUTHENTICATED USER BAR -->
+<div class="user-welcome" id="userWelcome" hidden>
+    <span id="welcomeName"></span>
+    <button class="logout-btn" onclick="logoutUser()">Logout</button>
+</div>
+
+<!-- LOGIN / REGISTRATION -->
+<section class="auth-section" id="authSection">
+    <div class="auth-container">
+        <div class="auth-heading">
+            <p class="tagline">WELCOME TO MUNCHY</p>
+            <h2 id="authTitle">Welcome Back! 👋</h2>
+            <p id="authSubtitle">Login to order your favourite food.</p>
+        </div>
+
+        <form id="loginForm" onsubmit="loginUser(event)">
+            <h3>User Login</h3>
+
+            <label for="loginEmail">Email Address</label>
+            <input type="email" id="loginEmail" placeholder="Enter your email" required>
+
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter your password" required>
+
+            <button type="submit" class="primary-btn full-btn">Login</button>
+
+            <p class="auth-switch">Don't have an account?
+                <a href="#" onclick="showRegister(); return false;">Register Now</a>
+            </p>
+        </form>
+
+        <form id="registerForm" onsubmit="registerUser(event)" hidden>
+            <h3>Create New Account</h3>
+
+            <label for="regName">Full Name</label>
+            <input type="text" id="regName" placeholder="Enter your full name" required>
+
+            <label for="regEmail">Email Address</label>
+            <input type="email" id="regEmail" placeholder="Enter your email" required>
+
+            <label for="regPhone">Mobile Number</label>
+            <input type="tel" id="regPhone" maxlength="10" inputmode="numeric"
+                   placeholder="10-digit mobile number" required>
+
+            <label for="regPassword">Password</label>
+            <input type="password" id="regPassword" minlength="8"
+                   placeholder="At least 8 characters" required>
+
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword"
+                   placeholder="Re-enter your password" required>
+
+            <button type="submit" class="primary-btn full-btn">Create Account</button>
+
+            <p class="auth-switch">Already have an account?
+                <a href="#" onclick="showLogin(); return false;">Login Here</a>
+            </p>
+        </form>
+
+        <p id="authMessage" role="status" aria-live="polite"></p>
+        <p class="security-note">Demo authentication only. Do not use a real or reused password.</p>
+    </div>
+</section>
+
+<!-- HERO -->
+<section class="hero" id="home">
+    <div class="hero-content">
+        <p class="tagline">YOUR CRAVINGS, OUR MISSION.</p>
+        <h1>Hungry?<br><span>We've got you.</span></h1>
+        <p>Discover delicious food from your favourite restaurants.</p>
+        <a href="#menu" class="primary-btn">Explore Food →</a>
+    </div>
+
+    <div class="hero-image">
+        <img src="https://thumbs.dreamstime.com/b/tasty-burger-french-fries-fire-close-up-home-made-flames-137249900.jpg"
+             alt="Delicious burger">
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+    <div>⚡ <strong>Fast Delivery</strong><small>Quick doorstep delivery</small></div>
+    <div>🍽️ <strong>Fresh Food</strong><small>Delicious meals</small></div>
+    <div>💳 <strong>Easy Payment</strong><small>Multiple payment options</small></div>
+</section>
+
+<!-- RESTAURANTS -->
+<section class="section" id="restaurants">
+    <h2>Popular Restaurants</h2>
+    <p class="subtitle">Find your next favourite place.</p>
+    <div class="restaurant-grid" id="restaurantGrid"></div>
+</section>
+
+<!-- FOOD MENU -->
+<section class="section" id="menu">
+    <h2>Explore Our Menu 🍔</h2>
+    <p class="subtitle">Something delicious is waiting for you.</p>
+
+    <div class="filters">
+        <input type="text" id="search" placeholder="Search food..." oninput="renderMenu()">
+
+        <select id="sort" onchange="renderMenu()">
+            <option value="default">Sort By</option>
+            <option value="low">Price: Low to High</option>
+            <option value="high">Price: High to Low</option>
+            <option value="rating">Highest Rated</option>
+        </select>
+
+        <select id="diet" onchange="renderMenu()">
+            <option value="all">All Food</option>
+            <option value="veg">Veg Only</option>
+            <option value="nonveg">Non-Veg Only</option>
+        </select>
+    </div>
+
+    <div class="categories">
+        <button class="category active" onclick="setCategory('All',this)">All</button>
+        <button class="category" onclick="setCategory('Burger',this)">🍔 Burgers</button>
+        <button class="category" onclick="setCategory('Pizza',this)">🍕 Pizza</button>
+        <button class="category" onclick="setCategory('Indian',this)">🍛 Indian</button>
+        <button class="category" onclick="setCategory('Chinese',this)">🍜 Chinese</button>
+        <button class="category" onclick="setCategory('Dessert',this)">🍰 Desserts</button>
+        <button class="category" onclick="setCategory('Drinks',this)">🥤 Drinks</button>
+    </div>
+
+    <div class="food-grid" id="foodGrid"></div>
+    <p id="noResults" class="empty-message" hidden>No food found. Try another search!</p>
+</section>
+
+<!-- CART -->
+<section class="section cart-section" id="cart">
+    <h2>Your Cart 🛒</h2>
+    <p class="subtitle">Your delicious choices are here.</p>
+
+    <div class="cart-layout">
+        <div class="cart-box">
+            <div id="cartItems"></div>
+            <button class="clear-btn" onclick="clearCart()">Clear Cart</button>
+        </div>
+
+        <div class="summary-box">
+            <h3>Order Summary</h3>
+
+            <div class="coupon-row">
+                <input id="coupon" placeholder="Enter coupon code">
+                <button onclick="applyCoupon()">Apply</button>
+            </div>
+
+            <p id="couponMessage" role="status"></p>
+
+            <div class="bill-row">
+                <span>Subtotal</span>
+                <span>₹<span id="subtotal">0</span></span>
+            </div>
+
+            <div class="bill-row">
+                <span>Delivery Fee</span>
+                <span>₹<span id="delivery">0</span></span>
+            </div>
+
+            <div class="bill-row">
+                <span>Taxes (5%)</span>
+                <span>₹<span id="tax">0</span></span>
+            </div>
+
+            <div class="bill-row">
+                <span>Discount</span>
+                <span>- ₹<span id="discount">0</span></span>
+            </div>
+
+            <hr>
+
+            <div class="bill-row total-row">
+                <strong>Total</strong>
+                <strong>₹<span id="total">0</span></strong>
+            </div>
+
+            <p class="hint">Free delivery on orders above ₹499!</p>
+            <a class="primary-btn checkout-link" href="#checkout">Proceed to Checkout</a>
+        </div>
+    </div>
+</section>
+
+<!-- CHECKOUT -->
+<section class="section checkout" id="checkout">
+    <h2>Checkout 📦</h2>
+    <p class="subtitle">Almost there! Just a few more details.</p>
+
+    <div class="checkout-box">
+        <label for="customerName">Full Name</label>
+        <input id="customerName" placeholder="Enter your name">
+
+        <label for="phone">Phone Number</label>
+        <input id="phone" type="tel" maxlength="10" inputmode="numeric"
+               placeholder="10-digit mobile number">
+
+        <label for="address">Delivery Address</label>
+        <textarea id="address" rows="3" placeholder="House number, street, area, city"></textarea>
+
+        <label for="payment">Payment Method</label>
+        <select id="payment">
+            <option value="Cash on Delivery">Cash on Delivery</option>
+            <option value="UPI (Demo)">UPI (Demo)</option>
+            <option value="Card (Demo)">Card (Demo)</option>
+        </select>
+
+        <button class="primary-btn full-btn" onclick="placeOrder()">Place My Order</button>
+        <p class="hint">Demo project: no real payment will be collected.</p>
+    </div>
+</section>
+
+<!-- ORDER TRACKING -->
+<section class="section tracking" id="orders">
+    <h2>Track Your Order 🚚</h2>
+    <p class="subtitle">Stay updated on your delicious delivery.</p>
+
+    <div class="tracking-box">
+        <h3 id="orderNumber">No active order</h3>
+        <p id="orderMessage">Place an order to see its status here.</p>
+
+        <div class="progress">
+            <div class="progress-step" id="step1">✓<small>Confirmed</small></div>
+            <div class="progress-line" id="line1"></div>
+            <div class="progress-step" id="step2">🍳<small>Preparing</small></div>
+            <div class="progress-line" id="line2"></div>
+            <div class="progress-step" id="step3">🛵<small>On the way</small></div>
+            <div class="progress-line" id="line3"></div>
+            <div class="progress-step" id="step4">✓<small>Delivered</small></div>
+        </div>
+
+        <button id="nextStatus" onclick="advanceOrder()" disabled>
+            Update Demo Order Status
+        </button>
+    </div>
+</section>
+
+<!-- ORDER HISTORY -->
+<section class="section" id="history">
+    <h2>Order History 📋</h2>
+    <div id="orderHistory">
+        <p class="empty-message">No previous orders yet.</p>
+    </div>
+</section>
+
+<!-- REVIEW -->
+<section class="section review">
+    <h2>Enjoyed Your Food? ⭐</h2>
+    <p class="subtitle">Share your experience with MUNCHY.</p>
+
+    <select id="rating">
+        <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+        <option value="4">⭐⭐⭐⭐ Good</option>
+        <option value="3">⭐⭐⭐ Average</option>
+        <option value="2">⭐⭐ Poor</option>
+        <option value="1">⭐ Bad</option>
+    </select>
+
+    <textarea id="reviewText" placeholder="Write your feedback..."></textarea>
+    <button class="primary-btn" onclick="submitReview()">Submit Review</button>
+    <p id="reviewMessage" role="status"></p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <h2>MUNCHY<span>.</span></h2>
+    <p>Good food. Great mood. Delivered.</p>
+    <p>© 2026 MUNCHY. All Rights Reserved.</p>
+</footer>
+
+<!-- JAVASCRIPT -->
+<script src="script.js"></script>
+
+</body>
+</html>
+
