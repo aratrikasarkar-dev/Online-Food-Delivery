@@ -1,14 +1,8 @@
-
-// ==========================================
+// ========================================
 // MUNCHY - FOOD DELIVERY WEBSITE
-// JAVASCRIPT
-// ==========================================
+// ========================================
 
-
-// ==========================================
-// 1. DATA
-// ==========================================
-
+// RESTAURANT DATA
 const restaurants = [
     {
         name: "Burger House",
@@ -36,7 +30,7 @@ const restaurants = [
     }
 ];
 
-
+// FOOD DATA
 const foods = [
     {
         id: 1,
@@ -45,7 +39,7 @@ const foods = [
         price: 149,
         rating: 4.8,
         type: "nonveg",
-        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTK0kAzRcjsPg9aNE5h9-SMAPiGvPKcdDxPeyZWhVG59w&s=10"
+        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500"
     },
     {
         id: 2,
@@ -54,7 +48,7 @@ const foods = [
         price: 179,
         rating: 4.7,
         type: "veg",
-        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcThimdqKnbDAstdWeUPE41YfWFnDNzN5va8j4Y67tvZzg&s=10"
+        image: "https://www.recipetineats.com/tachyon/2022/08/Stack-of-cheeseburgers.jpg"
     },
     {
         id: 3,
@@ -144,20 +138,18 @@ const foods = [
         price: 69,
         rating: 4.5,
         type: "veg",
-        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnXSSNFYa6eRQRvwbdqIy8kbFHq5MBieeIKd6jjFEFrA&s=10"
+        image: "https://www.texanerin.com/content/uploads/2014/08/honey-lemonade-2.jpg"
     }
 ];
 
-
-// ==========================================
-// 2. VARIABLES
-// ==========================================
+// ========================================
+// GLOBAL VARIABLES
+// ========================================
 
 let cart = [];
 let selectedCategory = "All";
 let discountAmount = 0;
 let couponApplied = false;
-
 let currentOrder = null;
 let orderStatus = 0;
 
@@ -166,10 +158,9 @@ const SESSION_KEY = "munchy_current_user";
 const CART_KEY = "munchy_cart";
 const ORDERS_KEY = "munchy_orders";
 
-
-// ==========================================
-// 3. HELPER FUNCTIONS
-// ==========================================
+// ========================================
+// HELPER FUNCTIONS
+// ========================================
 
 function getElement(id) {
     return document.getElementById(id);
@@ -185,7 +176,12 @@ function getSavedData(key, fallback) {
 }
 
 function saveData(key, data) {
-    localStorage.setItem(key, JSON.stringify(data));
+    try {
+        localStorage.setItem(key, JSON.stringify(data));
+    } catch (error) {
+        console.error("Could not save data:", error);
+        alert("Your browser could not save the data.");
+    }
 }
 
 function escapeHTML(value) {
@@ -202,14 +198,15 @@ function formatPrice(amount) {
     return Number(amount).toFixed(2).replace(/\.00$/, "");
 }
 
-
-// ==========================================
-// 4. PASSWORD HASHING FOR DEMO LOGIN
-// ==========================================
+// ========================================
+// PASSWORD HASHING
+// ========================================
 
 async function hashPassword(password) {
     if (!window.crypto || !window.crypto.subtle) {
-        throw new Error("Secure password hashing is unavailable. Open the website using Live Server.");
+        throw new Error(
+            "Password security is unavailable. Please open the project using VS Code Live Server."
+        );
     }
 
     const data = new TextEncoder().encode(password);
@@ -220,17 +217,17 @@ async function hashPassword(password) {
         .join("");
 }
 
-
-// ==========================================
-// 5. REGISTRATION
-// ==========================================
+// ========================================
+// REGISTRATION AND LOGIN
+// ========================================
 
 function showRegister() {
     getElement("loginForm").hidden = true;
     getElement("registerForm").hidden = false;
 
     getElement("authTitle").textContent = "Create Your Account 🎉";
-    getElement("authSubtitle").textContent = "Join MUNCHY and enjoy delicious food.";
+    getElement("authSubtitle").textContent =
+        "Join MUNCHY and enjoy delicious food.";
 
     getElement("authMessage").textContent = "";
 }
@@ -240,7 +237,8 @@ function showLogin() {
     getElement("loginForm").hidden = false;
 
     getElement("authTitle").textContent = "Welcome Back! 👋";
-    getElement("authSubtitle").textContent = "Login to order your favourite food.";
+    getElement("authSubtitle").textContent =
+        "Login to order your favourite food.";
 
     getElement("authMessage").textContent = "";
 }
@@ -267,7 +265,8 @@ async function registerUser(event) {
     }
 
     if (password.length < 8) {
-        message.textContent = "Password must contain at least 8 characters.";
+        message.textContent =
+            "Password must contain at least 8 characters.";
         return;
     }
 
@@ -278,10 +277,9 @@ async function registerUser(event) {
 
     const users = getSavedData(USERS_KEY, []);
 
-    const existingUser = users.find(user => user.email === email);
-
-    if (existingUser) {
-        message.textContent = "An account with this email already exists.";
+    if (users.some(user => user.email === email)) {
+        message.textContent =
+            "An account with this email already exists.";
         return;
     }
 
@@ -289,32 +287,24 @@ async function registerUser(event) {
         const passwordHash = await hashPassword(password);
 
         users.push({
-            name: name,
-            email: email,
-            phone: phone,
-            passwordHash: passwordHash
+            name,
+            email,
+            phone,
+            passwordHash
         });
 
         saveData(USERS_KEY, users);
 
-        message.textContent = "Registration successful! Please login.";
-
         getElement("registerForm").reset();
-
         showLogin();
 
-        getElement("authMessage").textContent =
+        message.textContent =
             "Account created successfully! Please login.";
 
     } catch (error) {
         message.textContent = error.message;
     }
 }
-
-
-// ==========================================
-// 6. LOGIN
-// ==========================================
 
 async function loginUser(event) {
     event.preventDefault();
@@ -323,13 +313,13 @@ async function loginUser(event) {
     const password = getElement("loginPassword").value;
 
     const message = getElement("authMessage");
-
     const users = getSavedData(USERS_KEY, []);
 
     const user = users.find(user => user.email === email);
 
     if (!user) {
-        message.textContent = "Account not found. Please register first.";
+        message.textContent =
+            "Account not found. Please register first.";
         return;
     }
 
@@ -337,7 +327,8 @@ async function loginUser(event) {
         const passwordHash = await hashPassword(password);
 
         if (user.passwordHash !== passwordHash) {
-            message.textContent = "Incorrect password. Please try again.";
+            message.textContent =
+                "Incorrect password. Please try again.";
             return;
         }
 
@@ -349,54 +340,57 @@ async function loginUser(event) {
 
         saveData(SESSION_KEY, currentUser);
 
-        message.textContent = "Login successful!";
-
         getElement("loginForm").reset();
 
         updateUserInterface();
+        renderOrderHistory();
+
+        message.textContent = "Login successful!";
 
     } catch (error) {
         message.textContent = error.message;
     }
 }
 
-
-// ==========================================
-// 7. LOGOUT
-// ==========================================
+// ========================================
+// LOGOUT AND USER INTERFACE
+// ========================================
 
 function logoutUser() {
     localStorage.removeItem(SESSION_KEY);
 
     getElement("userWelcome").hidden = true;
     getElement("navLogin").hidden = false;
-
     getElement("authSection").hidden = false;
 
     showLogin();
 
-    getElement("authMessage").textContent = "You have logged out successfully.";
+    getElement("authMessage").textContent =
+        "You have logged out successfully.";
+
+    currentOrder = null;
+    orderStatus = 0;
+
+    renderTracking();
+    renderOrderHistory();
 
     window.location.hash = "home";
 }
-
-
-// ==========================================
-// 8. UPDATE USER INTERFACE
-// ==========================================
 
 function updateUserInterface() {
     const user = getSavedData(SESSION_KEY, null);
 
     if (user) {
         getElement("userWelcome").hidden = false;
-        getElement("welcomeName").textContent = "Welcome, " + user.name + "!";
-        getElement("navLogin").hidden = true;
 
+        getElement("welcomeName").textContent =
+            "Welcome, " + user.name + "!";
+
+        getElement("navLogin").hidden = true;
         getElement("customerName").value = user.name;
         getElement("phone").value = user.phone;
-
         getElement("authSection").hidden = true;
+
     } else {
         getElement("userWelcome").hidden = true;
         getElement("navLogin").hidden = false;
@@ -404,17 +398,20 @@ function updateUserInterface() {
     }
 }
 
-
-// ==========================================
-// 9. DISPLAY RESTAURANTS
-// ==========================================
+// ========================================
+// DISPLAY RESTAURANTS
+// ========================================
 
 function renderRestaurants() {
     const container = getElement("restaurantGrid");
 
     container.innerHTML = restaurants.map(restaurant => `
         <div class="restaurant-card">
-            <img src="${restaurant.image}" alt="${escapeHTML(restaurant.name)}">
+            <img
+                src="${restaurant.image}"
+                alt="${escapeHTML(restaurant.name)}"
+                loading="lazy">
+
             <div class="restaurant-info">
                 <h3>${escapeHTML(restaurant.name)}</h3>
                 <p>${escapeHTML(restaurant.cuisine)}</p>
@@ -424,19 +421,20 @@ function renderRestaurants() {
     `).join("");
 }
 
-
-// ==========================================
-// 10. DISPLAY FOOD MENU
-// ==========================================
+// ========================================
+// DISPLAY FOOD MENU
+// ========================================
 
 function renderMenu() {
-    const searchText = getElement("search").value.toLowerCase();
+    const searchText =
+        getElement("search").value.toLowerCase().trim();
+
     const sortValue = getElement("sort").value;
     const dietValue = getElement("diet").value;
 
     let filteredFoods = foods.filter(food => {
-
-        const matchesSearch = food.name.toLowerCase().includes(searchText);
+        const matchesSearch =
+            food.name.toLowerCase().includes(searchText);
 
         const matchesCategory =
             selectedCategory === "All" ||
@@ -473,15 +471,21 @@ function renderMenu() {
 
     container.innerHTML = filteredFoods.map(food => `
         <div class="food-card">
-            <img src="${food.image}" alt="${escapeHTML(food.name)}">
+
+            <img
+                src="${food.image}"
+                alt="${escapeHTML(food.name)}"
+                loading="lazy"
+                onerror="this.onerror=null;this.src='https://placehold.co/600x400/f5c842/171714?text=Food+Image';">
 
             <div class="food-info">
+
                 <div class="food-title">
                     <h3>${escapeHTML(food.name)}</h3>
                     <span>⭐ ${food.rating}</span>
                 </div>
 
-                <p>${food.category}</p>
+                <p>${escapeHTML(food.category)}</p>
 
                 <div class="food-bottom">
                     <strong>₹${food.price}</strong>
@@ -490,15 +494,15 @@ function renderMenu() {
                         Add +
                     </button>
                 </div>
+
             </div>
         </div>
     `).join("");
 }
 
-
-// ==========================================
-// 11. CATEGORY FILTER
-// ==========================================
+// ========================================
+// CATEGORY FILTER
+// ========================================
 
 function setCategory(category, button) {
     selectedCategory = category;
@@ -512,10 +516,9 @@ function setCategory(category, button) {
     renderMenu();
 }
 
-
-// ==========================================
-// 12. ADD FOOD TO CART
-// ==========================================
+// ========================================
+// ADD FOOD TO CART
+// ========================================
 
 function addToCart(foodId) {
     const food = foods.find(item => item.id === foodId);
@@ -534,19 +537,51 @@ function addToCart(foodId) {
     }
 
     saveData(CART_KEY, cart);
-
     renderCart();
-
-    alert(food.name + " added to your cart!");
 }
 
-
-// ==========================================
-// 13. DISPLAY CART
-// ==========================================
+// ========================================
+// DISPLAY CART
+// ========================================
 
 function renderCart() {
     const container = getElement("cartItems");
+
+    if (cart.length === 0) {
+        container.innerHTML =
+            '<p class="empty-message">Your cart is empty. Add something delicious!</p>';
+    } else {
+        container.innerHTML = cart.map(item => `
+            <div class="cart-row">
+
+                <div>
+                    <h4>${escapeHTML(item.name)}</h4>
+                    <small>₹${item.price} each</small>
+                </div>
+
+                <div class="cart-controls">
+
+                    <button onclick="changeQuantity(${item.id}, -1)">
+                        −
+                    </button>
+
+                    <span>${item.quantity}</span>
+
+                    <button onclick="changeQuantity(${item.id}, 1)">
+                        +
+                    </button>
+
+                    <button
+                        class="remove-btn"
+                        onclick="removeFromCart(${item.id})">
+                        Remove
+                    </button>
+
+                </div>
+
+            </div>
+        `).join("");
+    }
 
     const totalItems = cart.reduce(
         (total, item) => total + item.quantity, 0
@@ -554,46 +589,12 @@ function renderCart() {
 
     getElement("cartCount").textContent = totalItems;
 
-    if (cart.length === 0) {
-        container.innerHTML = `
-            <p class="empty-message">
-                Your cart is empty. Add some delicious food!
-            </p>
-        `;
-    } else {
-        container.innerHTML = cart.map(item => `
-            <div class="cart-item">
-                <img src="${item.image}" alt="${escapeHTML(item.name)}">
-
-                <div class="cart-item-info">
-                    <h3>${escapeHTML(item.name)}</h3>
-                    <p>₹${item.price} each</p>
-
-                    <div class="quantity-controls">
-                        <button onclick="changeQuantity(${item.id}, -1)">−</button>
-                        <span>${item.quantity}</span>
-                        <button onclick="changeQuantity(${item.id}, 1)">+</button>
-                    </div>
-                </div>
-
-                <div class="cart-item-price">
-                    <strong>₹${item.price * item.quantity}</strong>
-
-                    <button onclick="removeFromCart(${item.id})">
-                        Remove
-                    </button>
-                </div>
-            </div>
-        `).join("");
-    }
-
     calculateBill();
 }
 
-
-// ==========================================
-// 14. CHANGE QUANTITY
-// ==========================================
+// ========================================
+// CHANGE QUANTITY
+// ========================================
 
 function changeQuantity(foodId, change) {
     const item = cart.find(item => item.id === foodId);
@@ -607,27 +608,23 @@ function changeQuantity(foodId, change) {
     }
 
     saveData(CART_KEY, cart);
-
     renderCart();
 }
 
-
-// ==========================================
-// 15. REMOVE FROM CART
-// ==========================================
+// ========================================
+// REMOVE ITEM
+// ========================================
 
 function removeFromCart(foodId) {
     cart = cart.filter(item => item.id !== foodId);
 
     saveData(CART_KEY, cart);
-
     renderCart();
 }
 
-
-// ==========================================
-// 16. CLEAR CART
-// ==========================================
+// ========================================
+// CLEAR CART
+// ========================================
 
 function clearCart() {
     if (cart.length === 0) {
@@ -637,7 +634,6 @@ function clearCart() {
 
     if (confirm("Are you sure you want to clear your cart?")) {
         cart = [];
-
         discountAmount = 0;
         couponApplied = false;
 
@@ -645,18 +641,17 @@ function clearCart() {
         getElement("couponMessage").textContent = "";
 
         saveData(CART_KEY, cart);
-
         renderCart();
     }
 }
 
-
-// ==========================================
-// 17. COUPON CODE
-// ==========================================
+// ========================================
+// APPLY COUPON
+// ========================================
 
 function applyCoupon() {
-    const coupon = getElement("coupon").value.trim().toUpperCase();
+    const coupon =
+        getElement("coupon").value.trim().toUpperCase();
 
     const subtotal = cart.reduce(
         (total, item) => total + item.price * item.quantity, 0
@@ -688,17 +683,17 @@ function applyCoupon() {
     calculateBill();
 }
 
-
-// ==========================================
-// 18. CALCULATE BILL
-// ==========================================
+// ========================================
+// CALCULATE BILL
+// ========================================
 
 function calculateBill() {
     const subtotal = cart.reduce(
         (total, item) => total + item.price * item.quantity, 0
     );
 
-    const delivery = subtotal === 0 || subtotal >= 499 ? 0 : 40;
+    const delivery =
+        subtotal === 0 || subtotal >= 499 ? 0 : 40;
 
     const tax = Math.round(subtotal * 0.05);
 
@@ -713,13 +708,13 @@ function calculateBill() {
     getElement("delivery").textContent = formatPrice(delivery);
     getElement("tax").textContent = formatPrice(tax);
     getElement("discount").textContent = formatPrice(discountAmount);
-    getElement("total").textContent = formatPrice(Math.max(0, total));
+    getElement("total").textContent =
+        formatPrice(Math.max(0, total));
 }
 
-
-// ==========================================
-// 19. SCROLL TO CART
-// ==========================================
+// ========================================
+// SCROLL TO CART
+// ========================================
 
 function scrollToCart() {
     getElement("cart").scrollIntoView({
@@ -727,18 +722,22 @@ function scrollToCart() {
     });
 }
 
-
-// ==========================================
-// 20. PLACE ORDER
-// ==========================================
+// ========================================
+// PLACE ORDER
+// ========================================
 
 function placeOrder() {
     const user = getSavedData(SESSION_KEY, null);
 
     if (!user) {
         alert("Please login before placing an order.");
+
         getElement("authSection").hidden = false;
-        getElement("authSection").scrollIntoView({ behavior: "smooth" });
+
+        getElement("authSection").scrollIntoView({
+            behavior: "smooth"
+        });
+
         return;
     }
 
@@ -766,8 +765,11 @@ function placeOrder() {
         (total, item) => total + item.price * item.quantity, 0
     );
 
-    const delivery = subtotal === 0 || subtotal >= 499 ? 0 : 40;
+    const delivery =
+        subtotal === 0 || subtotal >= 499 ? 0 : 40;
+
     const tax = Math.round(subtotal * 0.05);
+
     const total = subtotal + delivery + tax - discountAmount;
 
     const order = {
@@ -786,7 +788,6 @@ function placeOrder() {
     const orders = getSavedData(ORDERS_KEY, []);
 
     orders.unshift(order);
-
     saveData(ORDERS_KEY, orders);
 
     currentOrder = order;
@@ -812,14 +813,14 @@ function placeOrder() {
     });
 }
 
-
-// ==========================================
-// 21. ORDER TRACKING
-// ==========================================
+// ========================================
+// ORDER TRACKING
+// ========================================
 
 function renderTracking() {
     if (!currentOrder) {
         getElement("orderNumber").textContent = "No active order";
+
         getElement("orderMessage").textContent =
             "Place an order to see its status here.";
 
@@ -866,19 +867,19 @@ function renderTracking() {
     getElement("nextStatus").disabled = orderStatus >= 3;
 
     getElement("nextStatus").textContent =
-        orderStatus >= 3 ? "Order Delivered ✓" : "Update Demo Order Status";
+        orderStatus >= 3
+            ? "Order Delivered ✓"
+            : "Update Demo Order Status";
 }
 
-
-// ==========================================
-// 22. UPDATE ORDER STATUS
-// ==========================================
+// ========================================
+// UPDATE ORDER STATUS
+// ========================================
 
 function advanceOrder() {
     if (!currentOrder || orderStatus >= 3) return;
 
     orderStatus++;
-
     currentOrder.status = orderStatus;
 
     const orders = getSavedData(ORDERS_KEY, []);
@@ -896,14 +897,12 @@ function advanceOrder() {
     renderOrderHistory();
 }
 
-
-// ==========================================
-// 23. ORDER HISTORY
-// ==========================================
+// ========================================
+// ORDER HISTORY
+// ========================================
 
 function renderOrderHistory() {
     const container = getElement("orderHistory");
-
     const user = getSavedData(SESSION_KEY, null);
 
     if (!user) {
@@ -931,22 +930,34 @@ function renderOrderHistory() {
 
     container.innerHTML = orders.map(order => `
         <div class="history-card">
+
             <h3>Order #${escapeHTML(order.id)}</h3>
+
             <p>Date: ${escapeHTML(order.date)}</p>
+
             <p>Total: ₹${formatPrice(order.total)}</p>
+
             <p>Payment: ${escapeHTML(order.payment)}</p>
-            <p>Status: <strong>${statuses[order.status] || "Confirmed"}</strong></p>
-            <p>Items: ${order.items.map(item =>
-                `${escapeHTML(item.name)} x ${item.quantity}`
-            ).join(", ")}</p>
+
+            <p>
+                Status:
+                <strong>${statuses[order.status] || "Confirmed"}</strong>
+            </p>
+
+            <p>
+                Items:
+                ${order.items.map(item =>
+                    `${escapeHTML(item.name)} x ${item.quantity}`
+                ).join(", ")}
+            </p>
+
         </div>
     `).join("");
 }
 
-
-// ==========================================
-// 24. CUSTOMER REVIEWS
-// ==========================================
+// ========================================
+// CUSTOMER REVIEWS
+// ========================================
 
 function submitReview() {
     const rating = getElement("rating").value;
@@ -962,7 +973,8 @@ function submitReview() {
     const user = getSavedData(SESSION_KEY, null);
 
     if (!user) {
-        message.textContent = "Please login before submitting a review.";
+        message.textContent =
+            "Please login before submitting a review.";
         return;
     }
 
@@ -982,13 +994,11 @@ function submitReview() {
     getElement("reviewText").value = "";
 }
 
-
-// ==========================================
-// 25. INITIALIZE WEBSITE
-// ==========================================
+// ========================================
+// INITIALIZE WEBSITE
+// ========================================
 
 function initializeWebsite() {
-
     cart = getSavedData(CART_KEY, []);
 
     const user = getSavedData(SESSION_KEY, null);
@@ -997,8 +1007,9 @@ function initializeWebsite() {
         const orders = getSavedData(ORDERS_KEY, []);
 
         currentOrder = orders.find(
-            order => order.email === user.email &&
-                     order.status < 3
+            order =>
+                order.email === user.email &&
+                order.status < 3
         ) || null;
 
         if (currentOrder) {
@@ -1014,7 +1025,5 @@ function initializeWebsite() {
     renderOrderHistory();
 }
 
-
-// Run the website after HTML has loaded
+// Start after the HTML has loaded
 document.addEventListener("DOMContentLoaded", initializeWebsite);
-
